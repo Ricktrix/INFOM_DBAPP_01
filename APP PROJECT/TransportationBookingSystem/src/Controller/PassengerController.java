@@ -1,5 +1,7 @@
 package Controller;
 
+import Logic.PassengerManager;
+
 public class PassengerController {
 
     private PassengerManager manager;

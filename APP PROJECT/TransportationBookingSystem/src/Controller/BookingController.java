@@ -1,5 +1,7 @@
 package Controller;
 
+import Logic.BookingManager;
+
 public class BookingController {
 
     private BookingManager manager;
