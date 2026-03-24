@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS `payment` (
   `paymentDate` DATE NULL,
   `paymentMethod` VARCHAR(30) NULL,
   `amountPaid` DECIMAL(10,2) NULL,
-  `paymentStatus` VARCHAR(20) NULL,
+  `paymentStatus` ENUM('Paid', 'Refunded', 'Pending', 'Cancelled') NULL,
   PRIMARY KEY (`reservation_ID`),
   CONSTRAINT `fk_payment_reservation`
     FOREIGN KEY (`reservation_ID`)
@@ -194,14 +194,14 @@ INSERT INTO `schedule`
 VALUES
 -- Nov 2024 schedules
 (1,  1,  'NCR-1234', '2024-11-01', '06:00:00', '12:00:00', 'Roberto Lim',      53), -- Route 1 (55 cap) - 2 confirmed
-(2,  5,  'NFX-5678', '2024-11-01', '08:00:00', '14:00:00', 'Eduardo Tan',      59), -- Route 5 (60 cap) - 1 confirmed
-(3,  2,  'NBC-9012', '2024-11-02', '07:00:00', '15:30:00', 'Fernando Cruz',    54), -- Route 2 (55 cap) - 1 confirmed
+(2,  5,  'NFX-5678', '2024-11-01', '08:00:00', '14:00:00', 'Eduardo Tan',      54), -- Route 5 (55 cap) - 1 confirmed
+(3,  2,  'NBC-9012', '2024-11-02', '07:00:00', '15:30:00', 'Fernando Cruz',    59), -- Route 2 (60 cap) - 1 confirmed
 (4,  3,  'TNW-3456', '2024-11-02', '09:00:00', '18:00:00', 'Alfredo Santos',   49), -- Route 3 (50 cap) - 1 confirmed
 (5,  4,  'NCR-7890', '2024-11-03', '10:00:00', '12:30:00', 'Danilo Reyes',     34), -- Route 4 (35 cap) - 1 confirmed
 (6,  1,  'NFX-1122', '2024-11-05', '06:00:00', '12:00:00', 'Roberto Lim',      55), -- Route 1 (55 cap) - 1 pending
-(7,  8,  'NBC-3344', '2024-11-05', '07:30:00', '12:00:00', 'Mariano Garcia',   49), -- Route 8 (50 cap) - 1 confirmed
-(8,  6,  'TNW-5566', '2024-11-06', '08:00:00', '16:30:00', 'Rodrigo Bautista', 54), -- Route 6 (55 cap) - 1 confirmed
-(9,  4,  'NCR-7788', '2024-11-07', '06:30:00', '15:00:00', 'Eduardo Tan',      59), -- Route 4 (60 cap) - 1 confirmed
+(7,  8,  'NBC-3344', '2024-11-05', '07:30:00', '12:00:00', 'Mariano Garcia',   14), -- Route 8 (15 cap) - 1 confirmed
+(8,  6,  'TNW-5566', '2024-11-06', '08:00:00', '16:30:00', 'Rodrigo Bautista', 59), -- Route 6 (60 cap) - 1 confirmed
+(9,  4,  'NCR-7788', '2024-11-07', '06:30:00', '15:00:00', 'Eduardo Tan',      49), -- Route 4 (50 cap) - 1 confirmed
 (10, 9,  'NFX-9900', '2024-11-08', '09:00:00', '11:30:00', 'Nestor Aquino',    13), -- Route 9 (14 cap) - 1 confirmed
 -- Dec 2024 schedules
 (11, 5,  'NBC-1212', '2024-12-01', '06:00:00', '12:00:00', 'Roberto Lim',      54), -- Route 5 (55 cap) - 1 confirmed
@@ -670,3 +670,91 @@ CALL `sp_AssignSchedule`(
     @schedID, @msg
 );
 SELECT @schedID AS new_schedule_ID, @msg AS result_message;
+
+
+-- REPORTS
+
+-- Report 1: Monthly Passenger Activity
+-- Shows total reservations made and total amount spent per passenger for a given month/year.
+-- Filter by month and year in the application layer:
+-- SELECT * FROM view_MonthlyPassengerActivity WHERE Year=2024 AND Month=11;
+
+CREATE OR REPLACE VIEW `view_MonthlyPassengerActivity` AS
+SELECT
+    p.`passenger_ID`,
+    p.`firstName`,
+    p.`lastName`,
+    YEAR(r.`bookingDate`)  AS `Year`,
+    MONTH(r.`bookingDate`) AS `Month`,
+    COUNT(r.`reservation_ID`)  AS `TotalReservations`,
+    SUM(pay.`amountPaid`)      AS `TotalAmountSpent`
+FROM `passenger` p
+JOIN `reservation` r   ON p.`passenger_ID`   = r.`passenger_ID`
+JOIN `payment`    pay  ON r.`reservation_ID`  = pay.`reservation_ID`
+WHERE pay.`paymentStatus` = 'Paid'
+GROUP BY p.`passenger_ID`, `Year`, `Month`;
+
+
+-- Report 2: Annual Route Revenue
+-- Shows total bookings and total revenue per route for a given year.
+-- Filter by year in the application layer:
+-- SELECT * FROM view_AnnualRouteRevenue WHERE Year=2024;
+
+
+CREATE OR REPLACE VIEW `view_AnnualRouteRevenue` AS
+SELECT
+    ro.`route_ID`,
+    ro.`origin`,
+    ro.`destination`,
+    YEAR(pay.`paymentDate`)        AS `Year`,
+    COUNT(r.`reservation_ID`)      AS `TotalReservations`,
+    SUM(pay.`amountPaid`)          AS `TotalRevenue`
+FROM `route` ro
+JOIN `schedule`    s   ON ro.`route_ID`       = s.`route_ID`
+JOIN `reservation` r   ON s.`schedule_ID`     = r.`schedule_ID`
+JOIN `payment`     pay ON r.`reservation_ID`  = pay.`reservation_ID`
+WHERE pay.`paymentStatus` = 'Paid'
+GROUP BY ro.`route_ID`, `Year`;
+
+
+-- Report 3: Monthly Payment Transaction Summary
+-- Shows total and average payment amount for a given month/year.
+-- Filter by month and year in the application layer:
+-- SELECT * FROM view_MonthlyPaymentSummary WHERE Year=2024 AND Month=11;
+
+
+CREATE OR REPLACE VIEW `view_MonthlyPaymentSummary` AS
+SELECT
+    YEAR(`paymentDate`)  AS `Year`,
+    MONTH(`paymentDate`) AS `Month`,
+    SUM(`amountPaid`)    AS `TotalRevenue`,
+    AVG(`amountPaid`)    AS `AvgTransaction`
+FROM `payment`
+WHERE `paymentStatus` = 'Paid'
+GROUP BY `Year`, `Month`;
+
+
+
+-- Report 4: Schedule Occupancy Report
+-- Shows occupied seats and remaining availability per schedule.
+-- Filter by date or route in the application layer:
+-- SELECT * FROM view_ScheduleOccupancy WHERE departureDate = '2024-11-01';
+-- SELECT * FROM view_ScheduleOccupancy WHERE route_ID = 1;
+
+CREATE OR REPLACE VIEW `view_ScheduleOccupancy` AS
+SELECT
+    s.`schedule_ID`,
+    s.`route_ID`,
+    ro.`origin`,
+    ro.`destination`,
+    s.`plateNumber`,
+    s.`departureDate`,
+    s.`departureTime`,
+    s.`driverName`,
+    v.`capacity`                        AS `TotalSeats`,
+    (v.`capacity` - s.`availableSeats`) AS `OccupiedSeats`,
+    s.`availableSeats`                  AS `RemainingSeats`
+FROM `schedule` s
+JOIN `vehicle` v  ON s.`plateNumber` = v.`plateNumber`
+JOIN `route`   ro ON s.`route_ID`    = ro.`route_ID`;
+ 
