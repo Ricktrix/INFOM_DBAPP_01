@@ -1,5 +1,7 @@
 package Controller;
 
+import Logic.OperatorManager;
+
 public class OperatorController {
 
     private OperatorManager manager;

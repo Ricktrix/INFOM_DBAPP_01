@@ -1,5 +1,7 @@
 package Controller;
 
+import Logic.ScheduleManager;
+
 public class ScheduleController {
 
     private ScheduleManager manager;

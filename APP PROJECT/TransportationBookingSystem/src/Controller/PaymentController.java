@@ -1,5 +1,7 @@
 package Controller;
 
+import Logic.PaymentManager;
+
 public class PaymentController {
 
     private PaymentManager manager;

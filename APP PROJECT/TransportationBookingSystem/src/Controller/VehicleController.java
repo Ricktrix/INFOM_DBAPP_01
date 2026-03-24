@@ -1,5 +1,7 @@
 package Controller;
 
+import Logic.VehicleManager;
+
 public class VehicleController {
 
     private VehicleManager manager;

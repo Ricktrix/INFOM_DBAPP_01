@@ -1,5 +1,7 @@
 package Controller;
 
+import Logic.ReportManager;
+
 public class ReportController {
 
     private ReportManager manager;
