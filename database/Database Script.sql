@@ -2,9 +2,9 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION';
 
--- -----------------------------------------------------
+
 -- Schema transport_db
--- -----------------------------------------------------
+
 DROP SCHEMA IF EXISTS `transport_db` ;
 CREATE SCHEMA IF NOT EXISTS `transport_db` DEFAULT CHARACTER SET utf8 ;
 USE `transport_db` ;
