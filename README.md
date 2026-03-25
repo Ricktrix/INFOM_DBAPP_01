@@ -9,7 +9,7 @@ SETUP Instructions:
 4. Add mysql-connector-j-9.5.0.jar to the libraries
 5. Update the DBConnection.java:
   - Username: root
-  - Password: your password
+  - Password: qWZn122!
 6. Run the Driver.java
 
 Features:
