@@ -2,20 +2,15 @@
 -- TRANSPORATION BOOKING MANAGEMENT SYSTEM
 -- ========================================
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION';
+DROP DATABASE IF EXISTS transport_db;
+CREATE DATABASE transport_db;
+USE transport_db;
 
-
--- Schema transport_db
-
-DROP SCHEMA IF EXISTS `transport_db` ;
-CREATE SCHEMA IF NOT EXISTS `transport_db` DEFAULT CHARACTER SET utf8 ;
-USE transport_db ;
+SET SQL_MODE='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION';
 
 -- 1. Table: operator
 CREATE TABLE IF NOT EXISTS `operator` (
-  `operator_ID` INT NOT NULL,
+  `operator_ID` INT NOT NULL AUTO_INCREMENT,
   `operatorName` VARCHAR(100) NOT NULL,
   `operatorType` VARCHAR(50) NULL,
   `contactNumber` VARCHAR(20) NULL,
@@ -40,7 +35,7 @@ ENGINE = InnoDB;
 
 -- 3. Table: passenger
 CREATE TABLE IF NOT EXISTS `passenger` (
-  `passenger_ID` INT NOT NULL,
+  `passenger_ID` INT NOT NULL AUTO_INCREMENT,
   `lastName` VARCHAR(50) NOT NULL,
   `firstName` VARCHAR(50) NOT NULL,
   `email` VARCHAR(100) NULL,
@@ -52,7 +47,7 @@ ENGINE = InnoDB;
 
 -- 4. Table: route
 CREATE TABLE IF NOT EXISTS `route` (
-  `route_ID` INT NOT NULL,
+  `route_ID` INT NOT NULL AUTO_INCREMENT,
   `origin` VARCHAR(100) NULL,
   `destination` VARCHAR(100) NULL,
   `distanceKm` DECIMAL(6,2) NULL,
@@ -63,7 +58,7 @@ ENGINE = InnoDB;
 
 -- 5. Table: schedule
 CREATE TABLE IF NOT EXISTS `schedule` (
-  `schedule_ID` INT NOT NULL,
+  `schedule_ID` INT NOT NULL AUTO_INCREMENT,
   `route_ID` INT NOT NULL,
   `plateNumber` VARCHAR(20) NOT NULL,
   `departureDate` DATE NULL,
@@ -82,7 +77,7 @@ ENGINE = InnoDB;
 
 -- 6. Table: reservation
 CREATE TABLE IF NOT EXISTS `reservation` (
-  `reservation_ID` INT NOT NULL,
+  `reservation_ID` INT NOT NULL AUTO_INCREMENT,
   `passenger_ID` INT NOT NULL,
   `schedule_ID` INT NOT NULL,
   `bookingDate` DATE NULL,
@@ -110,9 +105,7 @@ CREATE TABLE IF NOT EXISTS `payment` (
     REFERENCES `reservation` (`reservation_ID`))
 ENGINE = InnoDB;
 
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
 
 
 

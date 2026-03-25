@@ -1,10 +1,16 @@
 package GUI;
 
+import java.sql.Connection;
 import java.util.Scanner;
 
 public class MainMenuGUI {
 
+    private Connection con;
     private Scanner sc = new Scanner(System.in);
+
+    public MainMenuGUI(Connection con){
+        this.con = con;
+    }
 
     public void showMenu(){
         int choice;
@@ -19,22 +25,23 @@ public class MainMenuGUI {
             System.out.println("0. Exit");
             System.out.println("Enter choice: ");
             choice = sc.nextInt();
+            sc.nextLine();
 
             switch (choice){
                 case 1:
-                    new PassengerGUI().menu();
+                    new PassengerGUI(con).menu();
                     break;
                 case 2:
-                    new BookingGUI().menu();
+                    new BookingGUI(con).menu();
                     break;
                 case 3:
-                    new ScheduleGUI().menu();
+                    new ScheduleGUI(con).menu();
                     break;
                 case 4:
-                    new PaymentGUI().menu();
+                    new PaymentGUI(con).menu();
                     break;
                 case 5:
-                    new ReportsGUI().menu();
+                    new ReportsGUI(con).menu();
                     break;
             }
 

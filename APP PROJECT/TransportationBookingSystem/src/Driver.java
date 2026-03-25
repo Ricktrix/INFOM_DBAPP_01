@@ -1,6 +1,6 @@
 import java.sql.Connection;
-import Logic.DBConnection;
 import GUI.MainMenuGUI;
+import Logic.DBConnection;
 
 public class Driver {
 
@@ -13,7 +13,11 @@ public class Driver {
         // Testing the Database Connection
         System.out.print("Connecting to the database... ");
 
-        try (Connection con = DBConnection.getConnection()) {
+        Connection con = null;
+
+        try {
+
+            con = DBConnection.getConnection();
 
             if (con != null) {
                 System.out.println("Its success!!");
@@ -32,7 +36,7 @@ public class Driver {
         // Launching the Main Menu
         System.out.println("\nLaunching the system...\n");
 
-        MainMenuGUI mainMenu = new MainMenuGUI();
+        MainMenuGUI mainMenu = new MainMenuGUI(con);
         mainMenu.showMenu();
 
         // Exiting message

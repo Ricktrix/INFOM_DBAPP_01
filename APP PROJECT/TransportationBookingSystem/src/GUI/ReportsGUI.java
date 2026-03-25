@@ -1,9 +1,17 @@
 package GUI;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Scanner;
 
 public class ReportsGUI {
 
+    private Connection con;
+
+    public ReportsGUI(Connection con) {
+        this.con = con;
+    }
     private Scanner sc = new Scanner(System.in);
 
     public void menu() {
@@ -21,53 +29,134 @@ public class ReportsGUI {
 
             switch (choice) {
                 case 1:
-                    monthlyPassengerReport();
+                    monthlyPassengerActivity();
                     break;
                 case 2:
-                    annualRouteReport();
+                    annualRouteRevenue();
                     break;
                 case 3:
-                    monthlyPaymentReport();
+                    monthlyPaymentSummary();
                     break;
                 case 4:
-                    scheduleOccupancyReport();
+                    scheduleOccupancy();
                     break;
             }
 
         } while (choice != 0);
     }
 
-    private void monthlyPassengerReport() {
-        System.out.print("Month: ");
-        int month = sc.nextInt();
+    private void monthlyPassengerActivity() {
 
-        System.out.print("Year: ");
-        int year = sc.nextInt();
+        try {
+            System.out.print("Enter Year (e.g. 2024): ");
+            int year = sc.nextInt();
 
-        System.out.println("Generating report... ");
+            System.out.print("Enter Month (1-12): ");
+            int month = sc.nextInt();
+
+            String sql = "SELECT * FROM view_MonthlyPassengerActivity WHERE Year = ? AND Month = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, year);
+            ps.setInt(2, month);
+
+            ResultSet rs = ps.executeQuery();
+
+            System.out.println("ID | Name | Reservations | Total Spent");
+
+            while (rs.next()) {
+                System.out.println(
+                        rs.getInt("passenger_ID") + " | " +
+                                rs.getString("firstName") + " " +
+                                rs.getString("lastName") + " | " +
+                                rs.getInt("TotalReservations") + " | " +
+                                rs.getDouble("TotalAmountSpent")
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void annualRouteReport() {
-        System.out.print("Year: ");
-        int year = sc.nextInt();
+    private void annualRouteRevenue() {
 
-        System.out.println("Generating report... ");
+        try {
+            System.out.print("Enter Year: ");
+            int year = sc.nextInt();
+
+            String sql = "SELECT * FROM view_AnnualRouteRevenue WHERE Year = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, year);
+
+            ResultSet rs = ps.executeQuery();
+
+            System.out.println("Route | Trips | Revenue");
+
+            while (rs.next()) {
+                System.out.println(
+                        rs.getString("origin") + " to " +
+                                rs.getString("destination") + " | " +
+                                rs.getInt("TotalReservations") + " | " +
+                                rs.getDouble("TotalRevenue")
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void monthlyPaymentReport() {
-        System.out.print("Month: ");
-        int month = sc.nextInt();
+    private void monthlyPaymentSummary() {
 
-        System.out.print("Year: ");
-        int year = sc.nextInt();
+        try {
+            System.out.print("Enter Year: ");
+            int year = sc.nextInt();
 
-        System.out.println("Generating Report... ");
+            System.out.print("Enter Month: ");
+            int month = sc.nextInt();
+
+            String sql = "SELECT * FROM view_MonthlyPaymentSummary WHERE Year = ? AND Month = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, year);
+            ps.setInt(2, month);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                System.out.println(
+                        "Total Revenue: " + rs.getDouble("TotalRevenue")
+                );
+                System.out.println(
+                        "Average Transaction: " + rs.getDouble("AvgTransaction")
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void scheduleOccupancyReport() {
-        System.out.print("Month: ");
-        int month = sc.nextInt();
+    private void scheduleOccupancy() {
 
-        System.out.println("Generating Report... ");
+        try {
+            String sql = "SELECT * FROM view_ScheduleOccupancy ORDER BY schedule_ID";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            System.out.printf("%-8s %-25s %-8s %-10s %-10s\n",
+                    "SchedID", "Route", "Seats", "Occupied", "Remaining");
+
+            while (rs.next()) {
+                System.out.printf("%-8d %-25s %-8d %-10d %-10d\n",
+                        rs.getInt("schedule_ID"),
+                        rs.getString("origin") + " to " + rs.getString("destination"),
+                        rs.getInt("TotalSeats"),
+                        rs.getInt("OccupiedSeats"),
+                        rs.getInt("RemainingSeats"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
